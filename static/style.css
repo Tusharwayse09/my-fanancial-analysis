@@ -1,0 +1,107 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 40px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+h1 {
+    text-align: center;
+}
+
+.subtitle {
+    text-align: center;
+    color: #555;
+}
+
+.input-box {
+    text-align: center;
+    margin-top: 20px;
+}
+
+input {
+    padding: 10px;
+    width: 220px;
+    margin: 5px;
+}
+
+button {
+    padding: 10px 18px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.compare-btn {
+    background: #059669;
+}
+
+.pdf-btn {
+    margin-top: 20px;
+    width: 100%;
+    background: #111827;
+}
+
+.metrics {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+.metric-card {
+    width: 30%;
+    background: #eef2ff;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.pros-cons {
+    display: flex;
+    margin-top: 25px;
+}
+
+.pros, .cons {
+    width: 50%;
+    padding: 20px;
+}
+
+.pros {
+    background: #ecfdf5;
+}
+
+.cons {
+    background: #fef2f2;
+}
+
+.loader {
+    display: none;
+    margin: 20px auto;
+    border: 6px solid #ddd;
+    border-top: 6px solid #22c55e;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+.status {
+    text-align: center;
+    color: green;
+    font-weight: bold;
+}

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Company Financial Analysis</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #111827;
+    --primary: #4f46e5;
+}
+
+.dark {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e5e7eb;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s ease;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: var(--card);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle {
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+h1 {
+    text-align: center;
+    color: var(--primary);
+}
+
+.subtitle {
+    text-align: center;
+    opacity: 0.7;
+}
+
+.search {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 25px 0;
+}
+
+input {
+    padding: 10px;
+    width: 200px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+}
+
+.loader {
+    display: none;
+    text-align: center;
+    margin: 20px;
+    font-weight: bold;
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+.cards {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    border-radius: 14px;
+    text-align: center;
+    animation: fadeIn 0.6s ease;
+}
+
+.good { background: #dcfce7; }
+.medium { background: #fef9c3; }
+.bad { background: #fee2e2; }
+
+.dark .good { background: #14532d; color: white; }
+.dark .medium { background: #78350f; color: white; }
+.dark .bad { background: #7f1d1d; color: white; }
+
+.result {
+    display: none;
+}
+
+.pros-cons {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.pros, .cons {
+    flex: 1;
+    padding: 20px;
+    border-radius: 14px;
+}
+
+.pros { background: #dcfce7; }
+.cons { background: #fee2e2; }
+
+.dark .pros { background: #14532d; }
+.dark .cons { background: #7f1d1d; }
+</style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <div></div>
+        <div class="toggle" onclick="toggleMode()">🌙 Dark Mode</div>
+    </div>
+
+    <h1>📊 Company Financial Analysis</h1>
+    <p class="subtitle">AI-powered financial insights</p>
+
+    <div class="search">
+        <input id="company" placeholder="Enter company (ABB)">
+        <button onclick="analyze()">Analyze</button>
+    </div>
+
+    <div class="loader" id="loader">Analyzing data...</div>
+
+    <div class="result" id="result">
+        <h2 id="title"></h2>
+
+        <div class="cards">
+            <div class="card" id="sales">Sales Growth</div>
+            <div class="card" id="profit">Profit Growth</div>
+            <div class="card" id="roe">ROE</div>
+        </div>
+
+        <canvas id="chart" style="margin-top:30px;"></canvas>
+
+        <div class="pros-cons">
+            <div class="pros"><h3>✅ Pros</h3><ul id="pros"></ul></div>
+            <div class="cons"><h3>⚠️ Cons</h3><ul id="cons"></ul></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let chart;
+
+function toggleMode() {
+    document.body.classList.toggle("dark");
+}
+
+function riskClass(value) {
+    if (value >= 20) return "good";
+    if (value >= 10) return "medium";
+    return "bad";
+}
+
+function analyze() {
+    const c = company.value.trim();
+    if (!c) return alert("Enter company ID");
+
+    loader.style.display = "block";
+    result.style.display = "none";
+
+    fetch(`/results/${c}`)
+        .then(r => r.json())
+        .then(d => {
+            loader.style.display = "none";
+            result.style.display = "block";
+
+            title.innerText = c.toUpperCase();
+
+            sales.className = `card ${riskClass(d.sales_growth)}`;
+            profit.className = `card ${riskClass(d.profit_growth)}`;
+            roe.className = `card ${riskClass(d.roe)}`;
+
+            sales.innerHTML = `Sales Growth<br><b>${d.sales_growth}%</b>`;
+            profit.innerHTML = `Profit Growth<br><b>${d.profit_growth}%</b>`;
+            roe.innerHTML = `ROE<br><b>${d.roe}%</b>`;
+
+            fillList("pros", d.pros.split(" | "));
+            fillList("cons", d.cons.split(" | "));
+
+            drawChart(d);
+        });
+}
+
+function fillList(id, arr) {
+    const ul = document.getElementById(id);
+    ul.innerHTML = "";
+    arr.forEach(x => {
+        const li = document.createElement("li");
+        li.innerText = x;
+        ul.appendChild(li);
+    });
+}
+
+function drawChart(d) {
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("chart"), {
+        type: "bar",
+        data: {
+            labels: ["Sales Growth", "Profit Growth", "ROE"],
+            datasets: [{
+                data: [d.sales_growth, d.profit_growth, d.roe],
+                backgroundColor: ["#4ade80", "#60a5fa", "#facc15"]
+            }]
+        }
+    });
+}
+</script>
+</body>
+</html>
